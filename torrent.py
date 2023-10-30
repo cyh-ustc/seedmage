@@ -87,12 +87,12 @@ class File:
 class Seeder:
   HTTP_HEADERS = {
     "Accept-Encoding": "gzip",
-    "User-Agent": "Deluge 1.3.15"
+    "User-Agent": "qBittorrent/4.5.2"
   }
 
   def __init__(self, torrent):
     self.torrent = torrent
-    self.peer_id = "-DE13F0-" + utils.random_id(12)
+    self.peer_id = "-qB4520-" + utils.random_id(12)
     self.download_key = utils.random_id(12)
     self.port = random.randint(1025, 65535)
 
@@ -104,7 +104,7 @@ class Seeder:
       "port": self.port,
       "uploaded": 0,
       "downloaded": 0,
-      "left": self.torrent.total_size,
+      "left": 0,
       "event": "started",
       "key": self.download_key,
       "compact": 1,
@@ -124,14 +124,32 @@ class Seeder:
       "port": self.port,
       "uploaded": 0,
       "downloaded": 0,
-      "left": self.torrent.total_size,
+      "left": 0,
       "key": self.download_key,
       "compact": 1,
       "numwant": 0,
       "supportcrypto": 1,
       "no_peer_id": 1
     }
-    http_params["uploaded"] = uploaded_bytes
+    http_params["uploaded"] = 0
+    requests.get(tracker_url, params=http_params, headers=self.HTTP_HEADERS, timeout=10)
+
+  def stop_seeding(self):
+    tracker_url = self.torrent.announce
+    http_params = {
+      "info_hash": self.torrent.file_hash, 
+      "peer_id": self.peer_id.encode("ascii"),
+      "port": self.port,
+      "uploaded": 0,
+      "downloaded": 0,
+      "left": 0,
+      "event": "stopped",
+      "key": self.download_key,
+      "compact": 1,
+      "numwant": 200,
+      "supportcrypto": 1,
+      "no_peer_id": 1
+    }
     requests.get(tracker_url, params=http_params, headers=self.HTTP_HEADERS, timeout=10)
 
   @property
