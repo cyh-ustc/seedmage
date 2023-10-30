@@ -36,45 +36,48 @@ signal.signal(signal.SIGINT, handler)
 
 
 async def seed(torrent_file_name):
-    # Torrent general information
-    torrent_file = torrent.File(os.path.join(TORRENTS_DIR, torrent_file_name))
-    print_info("Torrent:")
-    print(torrent_file)
-
-    # Requesting seeder information to the tracker
-    seeder = torrent.Seeder(torrent_file)
-    while True:
-        print_wip("Requesting seeder information")
-        try:
-            seeder.load_peers()
-            print_success("done")
-            break
-        except requests.exceptions.Timeout:
-            print_error("timeout")
-
-    print_info("Seeder:")
-    print(seeder)
-
-    # Calculate a few parameters
-    seed_per_second = 0
-    update_interval = seeder.update_interval
-
-    # Seeding
-    print_info("\nStarting seeding at %s/s" %
-               utils.sizeof_fmt(seed_per_second))
-    while True:
-        print_wip("Waiting %d seconds" % update_interval)
-        await asyncio.sleep(update_interval)
-        print_success("done")
-
+    try:
+        # Torrent general information
+        torrent_file = torrent.File(os.path.join(TORRENTS_DIR, torrent_file_name))
+        print_info("Torrent:")
+        print(torrent_file)
+    
+        # Requesting seeder information to the tracker
+        seeder = torrent.Seeder(torrent_file)
         while True:
+            print_wip("Requesting seeder information")
             try:
-                seeder.upload(0)
-                print_success("uploaded")
+                seeder.load_peers()
+                print_success("done")
                 break
             except requests.exceptions.Timeout:
                 print_error("timeout")
-
+    
+        print_info("Seeder:")
+        print(seeder)
+    
+        # Calculate a few parameters
+        seed_per_second = 0
+        update_interval = seeder.update_interval
+    
+        # Seeding
+        print_info("\nStarting seeding at %s/s" %
+                   utils.sizeof_fmt(seed_per_second))
+        while True:
+            print_wip("Waiting %d seconds" % update_interval)
+            await asyncio.sleep(update_interval)
+            print_success("done")
+    
+            while True:
+                try:
+                    seeder.upload(0)
+                    print_success("uploaded")
+                    break
+                except requests.exceptions.Timeout:
+                    print_error("timeout")
+    except asyncio.CancelledError:
+        print(f'{torrent_file_name} seeding task cancelled')
+    
 
 async def display_date(looptime):
     while True:
@@ -90,8 +93,9 @@ async def main():
         alltasks.append(bg_task)
 
         for torrent_file_name in torrents_list:
-            print(torrent_file_name)
-            task = tg.create_task(seed(torrent_file_name))
-            alltasks.append(task)
+            if torrent_file_name.endswith('.torrent'):
+                print(torrent_file_name)
+                task = tg.create_task(seed(torrent_file_name))
+                alltasks.append(task)
 
 asyncio.run(main())

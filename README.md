@@ -40,6 +40,6 @@ optional arguments:
 
 * multiple torrents [*]
 * dockerfile [*]
-* gracefully shutdown []
+* gracefully shutdown [*]
 * watch torrent dir change []
 * web admin page []

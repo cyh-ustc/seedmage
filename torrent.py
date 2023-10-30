@@ -96,6 +96,9 @@ class Seeder:
     self.download_key = utils.random_id(12)
     self.port = random.randint(1025, 65535)
 
+  def __del__(self):
+    print(self.stop_seeding(), flush=True)
+
   def load_peers(self):
     tracker_url = self.torrent.announce
     http_params = {
@@ -114,6 +117,7 @@ class Seeder:
     }
     req = requests.get(tracker_url, params=http_params, headers=self.HTTP_HEADERS, timeout=10)
     self.info = bencoding.decode(req.content)
+    print(self.info, flush=True)
     self.update_interval = self.info[b"interval"]
 
   def upload(self, uploaded_bytes):
@@ -150,7 +154,8 @@ class Seeder:
       "supportcrypto": 1,
       "no_peer_id": 1
     }
-    requests.get(tracker_url, params=http_params, headers=self.HTTP_HEADERS, timeout=10)
+    req = requests.get(tracker_url, params=http_params, headers=self.HTTP_HEADERS, timeout=10)
+    return bencoding.decode(req.content)
 
   @property
   def peers(self):
