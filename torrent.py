@@ -85,6 +85,10 @@ class File:
 
 
 class Seeder:
+  peer_id = "-qB4520-" + utils.random_id(12)
+  port = random.randint(1025, 65535)
+  download_key = utils.random_id(12)
+
   HTTP_HEADERS = {
     "Accept-Encoding": "gzip",
     "User-Agent": "qBittorrent/4.5.2"
@@ -92,9 +96,6 @@ class Seeder:
 
   def __init__(self, torrent):
     self.torrent = torrent
-    self.peer_id = "-qB4520-" + utils.random_id(12)
-    self.download_key = utils.random_id(12)
-    self.port = random.randint(1025, 65535)
 
   def __del__(self):
     print(self.stop_seeding(), flush=True)
@@ -103,13 +104,13 @@ class Seeder:
     tracker_url = self.torrent.announce
     http_params = {
       "info_hash": self.torrent.file_hash, 
-      "peer_id": self.peer_id.encode("ascii"),
-      "port": self.port,
+      "peer_id": Seeder.peer_id.encode("ascii"),
+      "port": Seeder.port,
       "uploaded": 0,
       "downloaded": 0,
       "left": 0,
       "event": "started",
-      "key": self.download_key,
+      "key": Seeder.download_key,
       "compact": 1,
       "numwant": 200,
       "supportcrypto": 1,
@@ -124,12 +125,12 @@ class Seeder:
     tracker_url = self.torrent.announce
     http_params = {
       "info_hash": self.torrent.file_hash, 
-      "peer_id": self.peer_id.encode("ascii"),
-      "port": self.port,
+      "peer_id": Seeder.peer_id.encode("ascii"),
+      "port": Seeder.port,
       "uploaded": 0,
       "downloaded": 0,
       "left": 0,
-      "key": self.download_key,
+      "key": Seeder.download_key,
       "compact": 1,
       "numwant": 0,
       "supportcrypto": 1,
@@ -142,13 +143,13 @@ class Seeder:
     tracker_url = self.torrent.announce
     http_params = {
       "info_hash": self.torrent.file_hash, 
-      "peer_id": self.peer_id.encode("ascii"),
-      "port": self.port,
+      "peer_id": Seeder.peer_id.encode("ascii"),
+      "port": Seeder.port,
       "uploaded": 0,
       "downloaded": 0,
       "left": 0,
       "event": "stopped",
-      "key": self.download_key,
+      "key": Seeder.download_key,
       "compact": 1,
       "numwant": 200,
       "supportcrypto": 1,
@@ -170,8 +171,8 @@ class Seeder:
     return result
 
   def __str__(self):
-    result  = "Peer ID: %s\n" % self.peer_id
-    result += "Key: %s\n" % self.download_key
-    result += "Port: %d\n" % self.port
+    result  = "Peer ID: %s\n" % Seeder.peer_id
+    result += "Key: %s\n" % Seeder.download_key
+    result += "Port: %d\n" % Seeder.port
     result += "Update tracker interval: %ds" % self.update_interval
     return result
